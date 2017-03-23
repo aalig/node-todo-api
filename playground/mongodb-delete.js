@@ -23,6 +23,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
     }).then((result) => {
         console.log(result);
     });
+    
     // Find one and delete
     db.collection('Todos').findOneAndDelete({
         completed: true
