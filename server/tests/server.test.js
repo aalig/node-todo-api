@@ -9,11 +9,12 @@ const todos = [{
     _id: new ObjectID(),
     text: 'First test todo'
 }, {
-     _id: new ObjectID(),
+    _id: new ObjectID(),
     text: 'Second test todo'
 }];
 
 // Clears the database before running every test
+// and adds two new documents
 beforeEach((done) => {
     Todo.remove({}).then(() => {
         return Todo.insertMany(todos);
@@ -26,7 +27,9 @@ describe('POST /todos', () => {
 
         request(app)
             .post('/todos')
-            .send({ text })
+            .send({
+                text
+            })
             .expect(200)
             .expect((res) => {
                 expect(res.body.text).toBe(text);
@@ -36,7 +39,9 @@ describe('POST /todos', () => {
                     return done(err);
                 }
 
-                Todo.find({text}).then((todos) => {
+                Todo.find({
+                    text
+                }).then((todos) => {
                     expect(todos.length).toBe(1);
                     expect(todos[0].text).toBe(text);
                     done();
@@ -74,7 +79,7 @@ describe('GET /todos', () => {
 });
 
 describe('GET /todos/:id', () => {
-    it('should return todo document', (done) => {             
+    it('should return todo document', (done) => {
         request(app)
             .get(`/todos/${todos[0]._id.toHexString()}`)
             .expect(200)
@@ -84,17 +89,17 @@ describe('GET /todos/:id', () => {
             .end(done);
     });
 
-     it('should return 404 if todo not found', (done) => {           
+    it('should return 404 if todo not found', (done) => {
         request(app)
             .get(`/todos/${new ObjectID().toHexString()}`)
-            .expect(404)           
+            .expect(404)
             .end(done);
     });
 
-     it('should return 404 for non object ids', (done) => {      
+    it('should return 404 for non object ids', (done) => {
         request(app)
             .get(`/todos/${new ObjectID().toHexString() + "123"}`)
-            .expect(404)           
+            .expect(404)
             .end(done);
     });
 });
