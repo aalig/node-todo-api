@@ -94,12 +94,16 @@ app.patch('/todos/:id', (req, res) => {
     });
 });
 
+// POST users(i.e. sign up call)
 app.post('/users', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
     var user = new User(body);
 
-    user.save().then((user) => {
-        res.send(user);
+    user.save().then(() => {
+        // Generate auth token for the user
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
     }).catch((err) => {
         res.status(400).send(err);
     });

@@ -1,7 +1,10 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
-var User = mongoose.model('User', {
+// We can add a method to a UserSchema but not on the model and hence the restructuring
+var userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
@@ -29,5 +32,37 @@ var User = mongoose.model('User', {
         }
     }]
 });
+
+// Instance methods
+// Instances of Models are documents. Documents have many of their own built-in instance methods. 
+// We may also define our own custom document instance methods too.
+// Arrow functions do not bind the 'this' keyword, so we will be using the regular function because the 
+// 'this' keyword will store the individual document
+userSchema.methods.generateAuthToken = function () {
+    var user = this;
+    var access= 'auth';
+
+    var token = jwt.sign({
+        _id: user._id.toHexString(),
+        access
+    }, 'abc123').toString();
+
+    user.tokens.push({access, token});
+
+    return user.save().then(() => {
+        return token;
+    });
+};
+
+// Override a method to update exactly how mangoose hanldes certain things
+// This method determines what exactly gets sent back when a mongoose model is converted into a JSON value
+userSchema.methods.toJSON = function () {
+    var user = this;
+    var userObject = user.toObject();
+
+    return _.pick(userObject, ['_id', 'email']);
+};
+
+var User = mongoose.model('User', userSchema);
 
 module.exports = {User};
