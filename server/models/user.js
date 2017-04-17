@@ -54,6 +54,27 @@ userSchema.methods.generateAuthToken = function () {
     });
 };
 
+// Schema.statics object is like a Schema.methods but everything you add onto it turns into a model method as 
+// opposed to an instance method
+userSchema.statics.findByToken = function (token) {
+    // Model methods gets called with the model as the 'this' binding
+    var User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    } catch (e) {
+        return Promise.reject();
+    }
+
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+};
+
+
 // Override a method to update exactly how mangoose hanldes certain things
 // This method determines what exactly gets sent back when a mongoose model is converted into a JSON value
 userSchema.methods.toJSON = function () {
