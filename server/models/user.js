@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 // We can add a method to a UserSchema but not on the model and hence the restructuring
 var userSchema = new mongoose.Schema({
@@ -83,6 +84,22 @@ userSchema.methods.toJSON = function () {
 
     return _.pick(userObject, ['_id', 'email']);
 };
+
+// Run some code before a given event (in this case before the 'save' event)
+userSchema.pre('save', function (next) {
+    var user = this;
+
+    if (user.isModified('password')) {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
+                user.password = hash;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+});
 
 var User = mongoose.model('User', userSchema);
 
