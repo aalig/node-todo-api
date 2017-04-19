@@ -75,6 +75,27 @@ userSchema.statics.findByToken = function (token) {
     });
 };
 
+userSchema.statics.findByCredentials = function (email, password) {
+    var User = this;
+
+    return User.findOne({email}).then((user) => {
+        if(!user) {
+            return Promise.reject();
+        }
+
+        // bcrypt.compare only supports callbacks and not promises. So, to keep using Promises we will return a new Promise
+        return new Promise ((resolve, reject) => {
+           bcrypt.compare(password, user.password, (err, res) => {
+                if(res) {
+                    resolve(user);
+                } else {
+                    reject();
+                }
+           });
+        });
+    });
+};
+
 
 // Override a method to update exactly how mangoose hanldes certain things
 // This method determines what exactly gets sent back when a mongoose model is converted into a JSON value
