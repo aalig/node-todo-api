@@ -65,6 +65,16 @@ userSchema.methods.removeToken = function (token) {
     });
 };
 
+
+// Override a method to update exactly how mangoose hanldes certain things
+// This method determines what exactly gets sent back when a mongoose model is converted into a JSON value
+userSchema.methods.toJSON = function () {
+    var user = this;
+    var userObject = user.toObject();
+
+    return _.pick(userObject, ['_id', 'email']);
+};
+
 // Schema.statics object is like a Schema.methods but everything you add onto it turns into a model method as 
 // opposed to an instance method
 userSchema.statics.findByToken = function (token) {
@@ -104,16 +114,6 @@ userSchema.statics.findByCredentials = function (email, password) {
            });
         });
     });
-};
-
-
-// Override a method to update exactly how mangoose hanldes certain things
-// This method determines what exactly gets sent back when a mongoose model is converted into a JSON value
-userSchema.methods.toJSON = function () {
-    var user = this;
-    var userObject = user.toObject();
-
-    return _.pick(userObject, ['_id', 'email']);
 };
 
 // Run some code before a given event (in this case before the 'save' event)
